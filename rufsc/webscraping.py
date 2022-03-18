@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def get_menu():
+def get_menu() -> dict:
     url = "https://ru.ufsc.br/ru/"
     page = requests.get(url)
     soup = BeautifulSoup(page.text, "html.parser")
@@ -27,15 +27,14 @@ def get_menu():
                     break
             meals.append(item)
 
-    # Maybe we can pack them up into a dict? \/
-    # menu = {k: v for k, v in zip(headers, food)}
-    # pprint(menu)
-    print_menu(headers, meals)
-    return headers, meals
+    menu = {k: v for k, v in zip(headers, meals)}
+    print_menu(menu)
+
+    return menu
 
 
-def print_menu(headers, meals):
-    for header, meal in zip(headers, meals):
+def print_menu(menu: dict):
+    for header, meal in menu.items():
         print(header)
         for m in meal:
             print("  ", m)
