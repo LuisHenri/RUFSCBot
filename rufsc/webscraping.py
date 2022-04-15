@@ -16,17 +16,18 @@ def get_menu() -> Optional[dict]:
     today_menu = None
     ranges = [slice(11 * i, 11 * (1 + i)) for i in range(3)]  # 0:11, 11:22, 22:33
     for i in range(3):
-        pdf_today_date = pdf_table[dt.datetime.today().isoweekday()][11 * i]
+        pdf_today_date = pdf_table[11 * i]
         pdf_today_date = dt.datetime.strptime(pdf_today_date, "%d/%m/%Y").date()
 
         # Get today's menu
         if pdf_today_date == dt.date.today():
-            today_menu = pdf_table[dt.datetime.today().isoweekday()][ranges[i]]
+            today_menu = pdf_table[ranges[i]]
             break
 
     if today_menu is not None:
+        today_date = dt.date.today().strftime("%d/%m/%Y")
         menu = {
-            "Data": [],
+            "Data": [today_date, _weekday2name[dt.date.today().isoweekday()]],
             "Preparações Fixas": [],
             "Carne": [],
             "Complemento": [],
@@ -34,7 +35,7 @@ def get_menu() -> Optional[dict]:
             "Molho para salada": [],
             "Sobremesa": [],
         }
-        for i, item in enumerate(today_menu):
+        for i, item in enumerate(today_menu[1:]):
             menu[get_menu_header(i)].append(item.capitalize())
         return menu
     else:
@@ -64,21 +65,30 @@ def get_pdf_table(pdf_link: str) -> pd.DataFrame:
         .drop([0, 1])  # Remove NaN and Column names
         .reset_index()
     )
-    return pdf_table
+    return pdf_table[dt.date.today().isoweekday()]  # Filter by the day of the week
 
 
 def get_menu_header(i: int) -> str:
-    if i == 0:
-        return "Data"
-    elif 1 <= i <= 3:
+    if 0 <= i <= 2:
         return "Preparações Fixas"
-    elif i == 4:
+    elif i == 3:
         return "Carne"
-    elif 5 <= i <= 6:
+    elif 4 <= i <= 5:
         return "Complemento"
-    elif i == 7:
+    elif i == 6:
         return "Molho para salada"
-    elif 8 <= i <= 9:
+    elif 7 <= i <= 8:
         return "Saladas"
-    elif i == 10:
+    elif i == 9:
         return "Sobremesa"
+
+
+_weekday2name = {
+    1: "Segunda-feira",
+    2: "Terça-feira",
+    3: "Quarta-feira",
+    4: "Quinta-feira",
+    5: "Sexta-feira",
+    6: "Sábado",
+    7: "Domingo",
+}
