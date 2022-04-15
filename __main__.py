@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    rufsc.bot.run("07:00")
+    rufsc.bot.run("10:00")  # UTC
 
 
 def setup_logger():
