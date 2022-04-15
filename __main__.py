@@ -3,11 +3,13 @@ import sys
 
 from tendo import singleton
 
+import rufsc.bot
+
 logger = logging.getLogger(__name__)
 
 
 def main():
-    logger.info("Hello World")
+    rufsc.bot.run("07:00")
 
 
 def setup_logger():

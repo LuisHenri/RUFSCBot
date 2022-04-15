@@ -7,7 +7,7 @@ import tabula as tb
 from bs4 import BeautifulSoup
 
 
-def get_menu():
+def get_menu() -> Optional[dict]:
     url = "https://restaurante.joinville.ufsc.br/cardapio-da-semana/"
     pdf_link = get_pdf_link(url)
     pdf_table = get_pdf_table(pdf_link)
@@ -67,7 +67,7 @@ def get_pdf_table(pdf_link: str) -> pd.DataFrame:
     return pdf_table
 
 
-def get_menu_header(i: int):
+def get_menu_header(i: int) -> str:
     if i == 0:
         return "Data"
     elif 1 <= i <= 3:
@@ -82,14 +82,3 @@ def get_menu_header(i: int):
         return "Saladas"
     elif i == 10:
         return "Sobremesa"
-
-
-def print_menu(menu: dict):
-    for header, meal in menu.items():
-        print(header)
-        for m in meal:
-            print("  ", m)
-
-
-if __name__ == "__main__":
-    get_menu()
