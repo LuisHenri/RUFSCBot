@@ -1,1 +1,7 @@
+boto
+bs4
+pyTelegramBotAPI
+requests
+schedule
+tabula-py
 tendo
