@@ -3,9 +3,14 @@ import time
 
 import schedule
 import telebot
+from boto.s3.connection import S3Connection
 
 from rufsc.webscraping import get_menu
 
+try:
+    s3 = S3Connection(os.environ["RUFSC_BOT_TOKEN"], os.environ["CHANNEL_ID"])
+except KeyError:
+    pass
 API_KEY = os.getenv("RUFSC_BOT_TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
 bot = telebot.TeleBot(API_KEY)
