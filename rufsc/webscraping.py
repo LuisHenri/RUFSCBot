@@ -20,7 +20,7 @@ def get_menu() -> Optional[dict]:
         pdf_today_date = dt.datetime.strptime(pdf_today_date, "%d/%m/%Y").date()
 
         # Get today's menu
-        if pdf_today_date == dt.datetime.today().date():
+        if pdf_today_date == dt.date.today():
             today_menu = pdf_table[dt.datetime.today().isoweekday()][ranges[i]]
             break
 
