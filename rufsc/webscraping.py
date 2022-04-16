@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 
 
 def get_menu() -> Optional[dict]:
+    today = dt.date.today()
     url = "https://restaurante.joinville.ufsc.br/cardapio-da-semana/"
     pdf_link = get_pdf_link(url)
     pdf_table = get_pdf_table(pdf_link)
@@ -17,17 +18,20 @@ def get_menu() -> Optional[dict]:
     ranges = [slice(11 * i, 11 * (1 + i)) for i in range(3)]  # 0:11, 11:22, 22:33
     for i in range(3):
         pdf_today_date = pdf_table[11 * i]
-        pdf_today_date = dt.datetime.strptime(pdf_today_date, "%d/%m/%Y").date()
+        try:
+            pdf_today_date = dt.datetime.strptime(pdf_today_date, "%d/%m/%Y").date()
+        except ValueError:
+            break
 
         # Get today's menu
-        if pdf_today_date == dt.date.today():
+        if pdf_today_date == today:
             today_menu = pdf_table[ranges[i]]
             break
 
     if today_menu is not None:
-        today_date = dt.date.today().strftime("%d/%m/%Y")
+        today_date = today.strftime("%d/%m/%Y")
         menu = {
-            "Data": [today_date, _weekday2name[dt.date.today().isoweekday()]],
+            "Data": [today_date, _weekday2name[today.isoweekday()]],
             "Preparações Fixas": [],
             "Carne": [],
             "Complemento": [],
@@ -36,7 +40,13 @@ def get_menu() -> Optional[dict]:
             "Sobremesa": [],
         }
         for i, item in enumerate(today_menu[1:]):
-            menu[get_menu_header(i)].append(item.capitalize())
+            food = (
+                item.replace("FIXO: ", "")
+                .replace("PTS", "Proteína texturizada de soja")
+                .replace("\r", " ")
+                .capitalize()
+            )
+            menu[get_menu_header(i)].append(food)
         return menu
     else:
         # No menu for today. Maybe they didn't add it yet.
@@ -62,10 +72,11 @@ def get_pdf_table(pdf_link: str) -> pd.DataFrame:
     }
     pdf_table = (
         tb.read_pdf(pdf_link, pages=1, pandas_options=pandas_options, lattice=True)[0]
-        .drop([0, 1])  # Remove NaN and Column names
-        .reset_index()
+        .drop([0, 1])[dt.date.today().isoweekday()]  # Filter by the day of the week
+        .fillna("Não foi possível obter informações")
+        .reset_index(drop=True)
     )
-    return pdf_table[dt.date.today().isoweekday()]  # Filter by the day of the week
+    return pdf_table
 
 
 def get_menu_header(i: int) -> str:
