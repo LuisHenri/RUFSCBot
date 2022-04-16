@@ -42,6 +42,7 @@ def get_menu() -> Optional[dict]:
         for i, item in enumerate(today_menu[1:]):
             food = (
                 item.replace("FIXO: ", "")
+                .replace("FIXO:", "")
                 .replace("PTS", "Proteína texturizada de soja")
                 .replace("\r", " ")
                 .capitalize()
