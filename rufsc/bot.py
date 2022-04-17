@@ -1,9 +1,8 @@
 import datetime as dt
 import os
-import time
 
-import schedule
 import telebot
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 from rufsc.webscraping import get_menu
 
@@ -33,9 +32,7 @@ def send_today_menu():
     bot.send_message(CHANNEL_ID, menu_msg)
 
 
-def run(run_time: str):
-    send_today_menu()
-    schedule.every().day.at(run_time).do(send_today_menu)
-    while True:
-        schedule.run_pending()
-        time.sleep(3600)
+def run():
+    scheduler = BlockingScheduler()
+    scheduler.add_job(send_today_menu, "cron", hour=10, timezone="utc")
+    scheduler.start()
