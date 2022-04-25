@@ -10,7 +10,9 @@ from bs4 import BeautifulSoup
 def get_menu() -> Optional[dict]:
     today = dt.date.today()
     url = "https://restaurante.joinville.ufsc.br/cardapio-da-semana/"
-    pdf_link = get_pdf_link(url)
+    pdf_link = get_pdf_link(url, today)
+    if not pdf_link:
+        return None
     pdf_table = get_pdf_table(pdf_link)
 
     # Extract data from the PDF Table
@@ -54,16 +56,19 @@ def get_menu() -> Optional[dict]:
         return None
 
 
-def get_pdf_link(url: str) -> Optional[str]:
+def get_pdf_link(url: str, today: dt.date) -> Optional[str]:
     # Request and find PDF menus
     page = requests.get(url)
     page_content = page.content
     page_soup = BeautifulSoup(page_content, "html.parser")
 
     p = page_soup.find("p").find_all("a")
-    pdfs = [link.get("href") for link in p if "Cardápio" in link.get("href")]
+    pdfs = [
+        link.get("href") for link in p if _number2month[today.month] in link.get("href")
+    ]
+    pdf_link = pdfs[-1] if pdfs else None
 
-    return pdfs[-1]
+    return pdf_link
 
 
 def get_pdf_table(pdf_link: str) -> pd.DataFrame:
@@ -104,3 +109,21 @@ _weekday2name = {
     6: "Sábado",
     7: "Domingo",
 }
+
+_number2month = {
+    1: "Janeiro",
+    2: "Fevereiro",
+    3: "Março",
+    4: "Abril",
+    5: "Maio",
+    6: "Junho",
+    7: "Julho",
+    8: "Agosto",
+    9: "Setembro",
+    10: "Outubro",
+    11: "Novembro",
+    12: "Dezembro",
+}
+
+if __name__ == "__main__":
+    print(get_menu())
