@@ -16,21 +16,21 @@ def get_menu() -> Optional[dict]:
     pdf_table = get_pdf_table(pdf_link)
 
     # Extract data from the PDF Table
-    today_menu = None
-    ranges = [slice(11 * i, 11 * (1 + i)) for i in range(3)]  # 0:11, 11:22, 22:33
-    for i in range(3):
-        pdf_today_date = pdf_table[11 * i]
-        try:
-            pdf_today_date = dt.datetime.strptime(pdf_today_date, "%d/%m/%Y").date()
-        except ValueError:
-            break
+    # today_menu = None
+    # ranges = [slice(11 * i, 11 * (1 + i)) for i in range(3)]  # 0:11, 11:22, 22:33
+    # for i in range(3):
+    #     pdf_today_date = pdf_table[11 * i]
+    #     try:
+    #         pdf_today_date = dt.datetime.strptime(pdf_today_date, "%d/%m/%Y").date()
+    #     except ValueError:
+    #         break
+    #
+    #     # Get today's menu
+    #     if pdf_today_date == today:
+    #         today_menu = pdf_table[ranges[i]]
+    #         break
 
-        # Get today's menu
-        if pdf_today_date == today:
-            today_menu = pdf_table[ranges[i]]
-            break
-
-    if today_menu is not None:
+    if pdf_table is not None:
         today_date = today.strftime("%d/%m/%Y")
         menu = {
             "Data": [today_date, _weekday2name[today.isoweekday()]],
@@ -41,7 +41,7 @@ def get_menu() -> Optional[dict]:
             "Molho para salada": [],
             "Sobremesa": [],
         }
-        for i, item in enumerate(today_menu[1:]):
+        for i, item in enumerate(pdf_table):
             food = (
                 item.replace("FIXO: ", "")
                 .replace("FIXO:", "")
@@ -62,9 +62,11 @@ def get_pdf_link(url: str, today: dt.date) -> Optional[str]:
     page_content = page.content
     page_soup = BeautifulSoup(page_content, "html.parser")
 
-    p = page_soup.find("p").find_all("a")
+    p = [p.find("a") for p in page_soup.find_all("p") if p.find("a")]
     pdfs = [
-        link.get("href") for link in p if _number2month[today.month] in link.get("href")
+        link.get("href")
+        for link in p
+        if _number2month[today.month] in link.get("href").lower()
     ]
     pdf_link = pdfs[-1] if pdfs else None
 
@@ -77,7 +79,7 @@ def get_pdf_table(pdf_link: str) -> pd.DataFrame:
         "names": list(range(1, 8)),  # ISO weekday numbers (1=Monday, 2=Tuesday, etc.)
     }
     pdf_table = (
-        tb.read_pdf(pdf_link, pages=1, pandas_options=pandas_options, lattice=True)[0]
+        tb.read_pdf(pdf_link, pandas_options=pandas_options, lattice=False)[0]
         .drop([0, 1])[dt.date.today().isoweekday()]  # Filter by the day of the week
         .fillna("Não foi possível obter informações")
         .reset_index(drop=True)
@@ -111,18 +113,18 @@ _weekday2name = {
 }
 
 _number2month = {
-    1: "Janeiro",
-    2: "Fevereiro",
-    3: "Março",
-    4: "Abril",
-    5: "Maio",
-    6: "Junho",
-    7: "Julho",
-    8: "Agosto",
-    9: "Setembro",
-    10: "Outubro",
-    11: "Novembro",
-    12: "Dezembro",
+    1: "janeiro",
+    2: "fevereiro",
+    3: "março",
+    4: "abril",
+    5: "maio",
+    6: "junho",
+    7: "julho",
+    8: "agosto",
+    9: "setembro",
+    10: "outubro",
+    11: "novembro",
+    12: "dezembro",
 }
 
 if __name__ == "__main__":

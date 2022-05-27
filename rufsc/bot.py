@@ -36,3 +36,7 @@ def run():
     scheduler = BlockingScheduler()
     scheduler.add_job(send_today_menu, "cron", hour=10, timezone="utc")
     scheduler.start()
+
+
+if __name__ == "__main__":
+    send_today_menu()
