@@ -68,7 +68,7 @@ def get_pdf_link(url: str, today: dt.date) -> Optional[str]:
         for link in p
         if _number2month[today.month] in link.get("href").lower()
     ]
-    pdf_link = pdfs[-1] if pdfs else None
+    pdf_link = pdfs[0] if pdfs else None
 
     return pdf_link
 
