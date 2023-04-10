@@ -1,4 +1,5 @@
 import datetime as dt
+import urllib.parse
 from typing import Optional
 
 import pandas as pd
@@ -49,7 +50,9 @@ def get_menu() -> Optional[dict]:
                 .replace("\r", " ")
                 .capitalize()
             )
-            menu[get_menu_header(i)].append(food)
+            menu_list = menu.get(get_menu_header(i))
+            if menu_list is not None:
+                menu_list.append(food)
         return menu
     else:
         # No menu for today. Maybe they didn't add it yet.
@@ -66,9 +69,9 @@ def get_pdf_link(url: str, today: dt.date) -> Optional[str]:
     pdfs = [
         link.get("href")
         for link in p
-        if _number2month[today.month] in link.get("href").lower()
+        if _number2month[today.month] in urllib.parse.unquote(link.get("href")).lower()
     ]
-    pdf_link = pdfs[0] if pdfs else None
+    pdf_link = pdfs[-1] if pdfs else None
 
     return pdf_link
 
@@ -79,7 +82,9 @@ def get_pdf_table(pdf_link: str) -> pd.DataFrame:
         "names": list(range(1, 8)),  # ISO weekday numbers (1=Monday, 2=Tuesday, etc.)
     }
     pdf_table = (
-        tb.read_pdf(pdf_link, pandas_options=pandas_options, lattice=False)[0]
+        tb.read_pdf(
+            pdf_link, pandas_options=pandas_options, lattice=True, multiple_tables=False
+        )[0]
         .drop([0, 1])[dt.date.today().isoweekday()]  # Filter by the day of the week
         .fillna("Não foi possível obter informações")
         .reset_index(drop=True)
